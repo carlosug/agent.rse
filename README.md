@@ -1,2 +1,10 @@
 # agent.rse
-agent-rse takes a GitHub README and tries to autonomously perform installation tasks, using LM of choice.
+
+**Agent.rse** autonomously explore multiple tools to:
+
+- repair issues in installation-related GitHub readmes,
+- find cybersecurity vulnerabilities (by solving Capture The Flag challenges),
+- simplify plans installation, or
+- generate plans for installation
+
+SWE-agent is built and maintained by researchers from UPM University.
