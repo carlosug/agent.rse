@@ -7,4 +7,4 @@
 - simplify plans installation, or
 - generate plans for installation
 
-SWE-agent is built and maintained by researchers from UPM University.
+**Agent.rse** is built and maintained by researchers from UPM University.
