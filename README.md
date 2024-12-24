@@ -7,4 +7,4 @@
 - simplify plans installation, or
 - generate plans for installation
 
-**Agent.rse** is built and maintained by researchers from UPM University.
+**Agent.rse** is built and maintained by researchers from OEG group. It's an academic research project started at UPM University as part of my PhD thesis.
