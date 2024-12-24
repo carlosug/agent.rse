@@ -4,9 +4,9 @@ The agent attempts to autonously install a given open source research software r
 
 **Agent.rse** autonomously explore multiple tools to:
 
-- repair issues in installation-related GitHub readmes,
-- find cybersecurity vulnerabilities (by solving Capture The Flag challenges),
-- simplify plans installation, or
-- generate plans for installation
+- search intallation-related section,
+- detect installation methods (plans and steps), 
+- repair installation methods,
+- generate installation methods.
 
 **Agent.rse** is built and maintained by researchers from OEG group. It's an academic research project started at UPM University as part of my PhD thesis.
