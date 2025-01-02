@@ -1,6 +1,6 @@
 # agent.rse
 
-The agent attempts to autonously install a given open source research software repository. Agent.rse performs its task in two stages: i) it gathers documentation related to the installation and ii) it tries to build, generate ,and if necessary, repair, a README to install and test the target repository. 
+The agent attempts to autonomously install a given open source research software repository. Agent.rse performs its tasks in two stages: i) it gathers text related to the installation from README and ii) it tries to build, generate ,and if necessary, repair, a instruction to install and test the target repository. We will explore how different LLMs can cooperate to enhance Agent.rese ability to transform a unstructured README into clear, concise and informative instructions.
 
 **Agent.rse** autonomously explore multiple tools to:
 
