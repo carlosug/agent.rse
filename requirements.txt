@@ -1,9 +1,3 @@
-Flask==2.1.1
-gradio
-transformers==4.20.1
-torch==2.5.1
-smolagents==0.1.0
-llama-index
-numpy==1.21.6
-pandas
-transformers
+python-dotenv
+groq
+termcolor
