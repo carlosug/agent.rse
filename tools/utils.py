@@ -9,9 +9,17 @@ def clone_repo(repo_url):
 
 
 def remove_file(file_name):
-    # Prepare and run the rm -r command
-    command = ["rm", file_name, "-rf"]
-    subprocess.run(command, check=True)
+    """
+    Removes the specified file.
+
+    Args:
+        file_name (str): The name of the file to remove.
+    """
+    try:
+        os.remove(file_name)
+        print(f"File {file_name} removed successfully.")
+    except OSError as e:
+        print(f"Error: {e.strerror} - {e.filename}")
 
 
 def list_dirs(directory, prefix=""):
