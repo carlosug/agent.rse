@@ -16,7 +16,7 @@ MAX_FILE_LINES = 1000
 OUTPUT_DIR = "output"
 
 if __name__ == "__main__":
-    model_name = "qwen-qwq-32b" # "llama-3.3-70b-versatile" "qwen-qwq-32b"
+    model_name = "llama-3.3-70b-versatile"  # "qwen-qwq-32b"
     repo_url = input(
         colored("Welcome to AutoREADME! Input the desired GitHub repository:\n", "green"))
     repo_name, repo_username, system_prompt_planner, system_prompt_summarizer, system_prompt_writer, system_prompt_validator, system_prompt_executor, dirs, docker_template, shell_template, standalone_template = initialization(
