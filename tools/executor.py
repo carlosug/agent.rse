@@ -17,7 +17,7 @@ COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 
 # Install Python dependencies
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r requirements.txt --root-user-action=ignore
 
 # Execute the script
 CMD {execution_command}
@@ -41,6 +41,17 @@ def create_dockerfile(script_path, script_type):
 
     with open("Dockerfile", "w") as file:
         file.write(DOCKERFILE_TEMPLATE.format(script_name=script_name, execution_command=execution_command))
+
+def create_requirements_file(packages):
+    """
+    Creates a requirements.txt file with the specified packages.
+
+    Args:
+        packages (list): A list of packages to include in the requirements.txt file.
+    """
+    with open("requirements.txt", "w") as file:
+        for package in packages:
+            file.write(f"{package}\n")
 
 def copy_files_to_context(script_path):
     """
@@ -66,18 +77,20 @@ def clean_up_context(script_path):
     if os.path.exists("requirements_copy.txt"):
         os.remove("requirements_copy.txt")
 
-def execute_in_docker(script_path, script_type):
+def execute_in_docker(script_path, script_type, packages):
     """
     Executes the given script in a Docker container.
 
     Args:
         script_path (str): The path to the script to execute.
         script_type (str): The type of the script (shell or python).
+        packages (list): A list of packages to include in the requirements.txt file.
 
     Returns:
         str: The output of the script execution.
     """
     create_dockerfile(script_path, script_type)
+    create_requirements_file(packages)
     copy_files_to_context(script_path)
 
     try:
@@ -96,26 +109,28 @@ def execute_in_docker(script_path, script_type):
         os.remove("Dockerfile")
         clean_up_context(script_path)
 
-def execute_script(script_path):
+def execute_script(script_path, packages):
     """
     Executes the given shell script in a Docker container.
 
     Args:
         script_path (str): The path to the shell script to execute.
+        packages (list): A list of packages to include in the requirements.txt file.
 
     Returns:
         str: The output of the script execution.
     """
-    return execute_in_docker(script_path, "shell")
+    return execute_in_docker(script_path, "shell", packages)
 
-def execute_python_script(script_path):
+def execute_python_script(script_path, packages):
     """
     Executes the given Python script in a Docker container.
 
     Args:
         script_path (str): The path to the Python script to execute.
+        packages (list): A list of packages to include in the requirements.txt file.
 
     Returns:
         str: The output of the script execution.
     """
-    return execute_in_docker(script_path, "python")
+    return execute_in_docker(script_path, "python", packages)

@@ -65,10 +65,11 @@ def writer(model, known_info, system_prompt_writer, output_type, template):
     # Debug print to see the model's response
     print("Model's response:", answer_writer)
     
-    json_section = re.search(
+    # Extract the code section from the model's response
+    code_section = re.search(
         r'<output>\s*(.*?)\s*</output>', answer_writer, re.DOTALL)
-    if json_section:
-        answer_writer = json_section.group(1)
+    if code_section:
+        answer_writer = code_section.group(1).strip()
     else:
         # Fallback mechanism: use the entire response if the expected format is not found
         print(colored("Warning: The model's response did not contain the expected output format. Using the entire response as fallback.", "yellow"))

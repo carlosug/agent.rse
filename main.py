@@ -16,7 +16,7 @@ MAX_FILE_LINES = 1000
 OUTPUT_DIR = "output"
 
 if __name__ == "__main__":
-    model_name = "qwen-qwq-32b" # "llama-3.3-70b-versatile" "qwen-qwq-32b"
+    model_name = "llama-3.3-70b-versatile" # "qwen-qwq-32b"  # "llama-3.3-70b-versatile"
     repo_url = input(
         colored("Welcome to AutoREADME! Input the desired GitHub repository:\n", "green"))
     repo_name, repo_username, system_prompt_planner, system_prompt_summarizer, system_prompt_writer, system_prompt_validator, system_prompt_executor, dirs, docker_template, shell_template, standalone_template = initialization(
@@ -116,10 +116,11 @@ if __name__ == "__main__":
 
     # Execute the generated output file
     print(colored("\nStarting AI Executor...", "green"))
+    packages = ["ollama"]  # Example list of packages to include in requirements.txt
     if suggested_output == "Shell Script":
-        execution_result = execute_script(output_path)
+        execution_result = execute_script(output_path, packages)
     elif suggested_output == "Standalone Executable":
-        execution_result = execute_python_script(output_path)
+        execution_result = execute_python_script(output_path, packages)
     else:
         execution_result = "Execution not supported for this output type."
     print(colored("Executor finished!", "green"))
