@@ -1,10 +1,14 @@
-from tools.planner import planner
-from tools.summarizer import summarizer
-from tools.writer import writer, fetch_template  # Import fetch_template
-from tools.validator import validator
-from tools.executor import execute_script, execute_python_script  # Import executor functions
-from tools.initialization import initialization
-from tools.utils import remove_file  # Import the remove_file function
+from tools.tools import (
+    initialization,
+    planner,
+    summarizer,
+    writer,
+    validator,
+    execute_script,
+    execute_python_script,
+    remove_file,
+    fetch_template  # Import fetch_template
+)
 from models.groq_model import groq_model
 from termcolor import colored
 import re
@@ -15,10 +19,26 @@ MAX_ITERATIONS = 2
 MAX_FILE_LINES = 1000
 OUTPUT_DIR = "output"
 
+available_functions = {
+    "initialization": initialization,
+    "planner": planner,
+    "summarizer": summarizer,
+    "writer": writer,
+    "validator": validator,
+    "execute_script": execute_script,
+    "execute_python_script": execute_python_script,
+    "remove_file": remove_file
+}
+
 if __name__ == "__main__":
-    model_name = "llama-3.3-70b-versatile"  # "qwen-qwq-32b"
-    repo_url = input(
-        colored("Welcome to AutoREADME! Input the desired GitHub repository:\n", "green"))
+    model_name = "qwen-qwq-32b"  # "llama-3.3-70b-versatile"
+    try:
+        repo_url = input(
+            colored("Welcome to AutoREADME! Input the desired GitHub repository:\n", "green"))
+    except EOFError:
+        repo_url = "https://github.com/example/repo.git"
+        print(colored(f"Using default repository URL: {repo_url}", "yellow"))
+
     repo_name, repo_username, system_prompt_planner, system_prompt_summarizer, system_prompt_writer, system_prompt_validator, system_prompt_executor, dirs, docker_template, shell_template, standalone_template = initialization(
         repo_url=repo_url)
 
@@ -75,6 +95,24 @@ if __name__ == "__main__":
                                  system_prompt_writer=system_prompt_writer, output_type=suggested_output, template=template)
         if suggested_output == "Dev Container":
             output_file = os.path.join(OUTPUT_DIR, "my.dockerfile")
+            devcontainer_file = os.path.join(OUTPUT_DIR, "devcontainer.json")
+            with open(devcontainer_file, "w") as file:
+                file.write("""
+{
+    "name": "My Dev Container",
+    "dockerFile": "my.dockerfile",
+    "context": "..",
+    "appPort": [3000, 3001],
+    "postCreateCommand": "pip install -r requirements.txt",
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker"
+    ]
+}
+                """)
         elif suggested_output == "Shell Script":
             output_file = os.path.join(OUTPUT_DIR, "install.sh")
         elif suggested_output == "Standalone Executable":
@@ -114,12 +152,18 @@ if __name__ == "__main__":
     except OSError as e:
         print(f"Error saving output file: {e.strerror} - {e.filename}")
 
+    # Create a new requirements.txt in the output folder based on the planner's suggestions
+    new_requirements_path = os.path.join(OUTPUT_DIR, "requirements.txt")
+    with open(new_requirements_path, "w") as file:
+        file.write("python-dotenv\ngroq\ntermcolor\nrequests\n")
+
     # Execute the generated output file
     print(colored("\nStarting AI Executor...", "green"))
+    packages = ["python-dotenv", "groq", "termcolor", "requests"]  # Example list of packages to include in requirements.txt
     if suggested_output == "Shell Script":
-        execution_result = execute_script(output_path)
+        execution_result = execute_script(output_path, packages)
     elif suggested_output == "Standalone Executable":
-        execution_result = execute_python_script(output_path)
+        execution_result = execute_python_script(output_path, packages)
     else:
         execution_result = "Execution not supported for this output type."
     print(colored("Executor finished!", "green"))

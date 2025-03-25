@@ -17,7 +17,6 @@ def remove_file(file_name):
     """
     try:
         os.remove(file_name)
-        print(f"File {file_name} removed successfully.")
     except OSError as e:
         print(f"Error: {e.strerror} - {e.filename}")
 
