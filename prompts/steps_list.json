@@ -1,0 +1,37 @@
+{
+    "1": {
+        "static_header": "Step 1: Extract installation instructions from the README file.",
+        "step_line": "- Use 'read_file' to read the README file.\n- Parse the README file to extract installation instructions.",
+        "result_of_step": []
+    },
+    "2": {
+        "static_header": "Step 2: Interpret the extracted installation instructions.",
+        "step_line": "- Analyze the extracted instructions to determine the sequential actions required for installation.",
+        "result_of_step": []
+    },
+    "3": {
+        "static_header": "Step 3: Generate a Dockerfile with the installation instructions.",
+        "step_line": "- Use 'write_to_file' to create the 'Dockerfile'.\n- The Dockerfile should include the necessary steps to install the project based on the interpreted instructions.\n- Example template of Dockerfile:\n\n  FROM base_image  # Adjust the base image based on the project's language and dependencies\n\n  # Add necessary environment variables\n  ENV VAR_NAME=value\n\n  # Install required packages and dependencies\n  RUN apt-get update && \\\n      apt-get install -y package1 package2 && \\\n      apt-get clean && \\\n      rm -rf /var/lib/apt/lists/* || exit 0\n\n  WORKDIR /app\n\n  # Clone the repository\n  RUN git clone project_git_url || exit 0\n\n  WORKDIR /app/project_name\n\n  # Run installation commands\n  RUN command1 && \\\n      command2 && \\\n      command3 || exit 0\n\n  CMD [\"bash\"]\n\n- Notice how '|| exit 0' is added to some steps to avoid build failures in case of errors; you should do this when necessary.",
+        "result_of_step": []
+    },
+    "4": {
+        "static_header": "Step 4: Execute the installation instructions.",
+        "step_line": "- Use 'linux_terminal' to execute the installation instructions within the Docker container.",
+        "result_of_step": []
+    },
+    "5": {
+        "static_header": "Step 5: Validate the installation.",
+        "step_line": "- Verify that the installation was successful by checking the expected outcomes (e.g., presence of certain files, successful execution of commands).",
+        "result_of_step": []
+    },
+    "6": {
+        "static_header": "Step 6: Identify the test framework and run tests.",
+        "step_line": "- Ensure the testing framework is installed and locate the test folder/files.\n- Launch the tests using 'linux_terminal'.",
+        "result_of_step": []
+    },
+    "7": {
+        "static_header": "Step 7: Create a bash script for installation steps.",
+        "step_line": "- Use 'write_to_file' to save commands into 'SETUP_AND_INSTALL.sh'.\n- Always create the installation script at the end, after successfully running test cases.\n- Do not try to execute the installation script during the process or attempt to set up everything using the script; instead, use 'linux_terminal'.",
+        "result_of_step": []
+    }
+}

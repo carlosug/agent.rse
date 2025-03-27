@@ -206,29 +206,41 @@ def initialization(repo_url):
     repo_username = repo_url.rstrip("/").split("/")[-2]
     clone_repo(repo_url)
 
-    with open("./prompts/planner.md", "r") as file:
-        system_prompt_planner = file.read()
+    prompts_dir = "./prompts"  # Update this if the prompts directory is elsewhere
 
-    with open("./prompts/summarizer.md", "r") as file:
-        system_prompt_summarizer = file.read()
+    try:
+        with open(f"{prompts_dir}/planner/planner.md", "r") as file:
+            system_prompt_planner = file.read()
 
-    with open("./prompts/writer.md", "r") as file:
-        system_prompt_writer = file.read()
+        with open(f"{prompts_dir}/summarizer/summarizer.md", "r") as file:
+            system_prompt_summarizer = file.read()
 
-    with open("./prompts/validator.md", "r") as file:
-        system_prompt_validator = file.read()
+        with open(f"{prompts_dir}/writer/writer.md", "r") as file:
+            system_prompt_writer = file.read()
 
-    with open("./prompts/executor.md", "r") as file:
-        system_prompt_executor = file.read()
+        with open(f"{prompts_dir}/validator/validator.md", "r") as file:
+            system_prompt_validator = file.read()
 
-    with open("./templates/docker_template.py", "r") as file:
-        docker_template_content = file.read()
+        with open(f"{prompts_dir}/executor/executor.md", "r") as file:
+            system_prompt_executor = file.read()
+    except FileNotFoundError as e:
+        print(f"Error: Missing prompt file: {e.filename}")
+        raise
 
-    with open("./templates/shell_template.py", "r") as file:
-        shell_template_content = file.read()
+    templates_dir = "./templates"  # Update this if the templates directory is elsewhere
 
-    with open("./templates/standalone_template.py", "r") as file:
-        standalone_template_content = file.read()
+    try:
+        with open(f"{templates_dir}/docker_template.py", "r") as file:
+            docker_template_content = file.read()
+
+        with open(f"{templates_dir}/shell_template.py", "r") as file:
+            shell_template_content = file.read()
+
+        with open(f"{templates_dir}/standalone_template.py", "r") as file:
+            standalone_template_content = file.read()
+    except FileNotFoundError as e:
+        print(f"Error: Missing template file: {e.filename}")
+        raise
 
     dirs = list_dirs(repo_name)
     return (
@@ -248,47 +260,86 @@ def initialization(repo_url):
 # ------------------------------------------------------------------------------
 # PLANNER
 # ------------------------------------------------------------------------------
+import re
+import json
+from termcolor import colored
+
 def planner(model, dirs, known_info, already_read, system_prompt_planner):
+    """
+    Executes the planner step using the model.
+    """
     planner_prompt = {"files": dirs, "already-seen": already_read, "gathered-info": known_info}
-    answer_planner = model.answer(
+    tool_used, answer_planner = model.answer(
         system_prompt=system_prompt_planner,
         prompt=str(planner_prompt),
         json=False
     )
+
+    # Debugging: Check the type and value of answer_planner
+    print(f"Debug: tool_used: {tool_used}, answer_planner type: {type(answer_planner)}, value: {answer_planner}")
+
+    # Ensure answer_planner is a string
+    if not isinstance(answer_planner, str):
+        raise TypeError(f"Expected a string for answer_planner, but got {type(answer_planner)}")
+
+    # Extract JSON section from the response
     json_section = re.search(r'<output>\s*(.*?)\s*</output>', answer_planner, re.DOTALL)
     if not json_section:
         raise ValueError("Planner response did not contain a valid <output> block with JSON data.")
+
     extracted_text = json_section.group(1)
-    import json
     files_to_read = json.loads(extracted_text)
 
     already_read.extend(files_to_read)
     print(colored(f"Planner: Files to read -> {files_to_read}", "magenta"))
 
-    return files_to_read, known_info, already_read
+    return tool_used, files_to_read, known_info, already_read
 
 # ------------------------------------------------------------------------------
 # SUMMARIZER
 # ------------------------------------------------------------------------------
+import re
+import json
+from termcolor import colored
+
 def summarizer(model, files, known_info, system_prompt_summarizer):
-    for file_to_check in files:
-        with open(file_to_check, "r") as f:
-            file_contents = f.read()
+    """
+    Summarizes the content of the given files using the model.
+    """
+    summarizer_prompt = {"files": files, "gathered-info": known_info}
+    tool_used, answer_summarizer = model.answer(
+        system_prompt=system_prompt_summarizer,
+        prompt=str(summarizer_prompt),
+        json=False
+    )
 
-        answer_summarizer = model.answer(
-            system_prompt=system_prompt_summarizer,
-            prompt=f"Here's what we know now: {known_info}\n\nHere's the file to check: {file_to_check}\n" + file_contents,
-            json=False
-        )
-        json_section = re.search(r'<output>\s*(.*?)\s*</output>', answer_summarizer, re.DOTALL)
-        if not json_section:
-            raise ValueError(f"Summarizer response did not contain a valid <output> block for file {file_to_check}.")
-        updated_info = json_section.group(1)
+    # Debugging: Check the type and value of answer_summarizer
+    print(f"Debug: tool_used: {tool_used}, answer_summarizer type: {type(answer_summarizer)}, value: {answer_summarizer}")
 
-        print(colored(f"Summarizer: Updated known-info template\n{updated_info}", "cyan"))
-        known_info = updated_info
+    # Ensure answer_summarizer is a string
+    if not isinstance(answer_summarizer, str):
+        raise TypeError(f"Expected a string for answer_summarizer, but got {type(answer_summarizer)}")
 
-    return known_info
+    # Extract JSON section from the response
+    json_section = re.search(r'<output>\s*(.*?)\s*</output>', answer_summarizer, re.DOTALL)
+    if not json_section:
+        # Debugging: Print the response if no <output> block is found
+        print(f"Debug: No <output> block found in response: {answer_summarizer}")
+        raise ValueError("Summarizer response did not contain a valid <output> block with JSON data.")
+
+    extracted_text = json_section.group(1)
+
+    # Parse the JSON data
+    try:
+        updated_known_info = json.loads(extracted_text)
+    except json.JSONDecodeError as e:
+        # Debugging: Print the invalid JSON content
+        print(f"Debug: Invalid JSON content in <output>: {extracted_text}")
+        raise ValueError(f"Failed to parse JSON data in <output>: {str(e)}")
+
+    print(colored(f"Summarizer: Updated known info -> {updated_known_info}", "magenta"))
+
+    return tool_used, updated_known_info
 
 # ------------------------------------------------------------------------------
 # VALIDATOR

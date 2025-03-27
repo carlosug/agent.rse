@@ -7,18 +7,20 @@ from tools.tools import (
     execute_script,
     execute_python_script,
     remove_file,
-    fetch_template  # Import fetch_template
+    fetch_template
 )
 from models.groq_model import groq_model
 from termcolor import colored
 import re
 import os
 import shutil
+import json
 
 MAX_ITERATIONS = 2
 MAX_FILE_LINES = 1000
 OUTPUT_DIR = "output"
 
+# Define available functions for tool calls
 available_functions = {
     "initialization": initialization,
     "planner": planner,
@@ -64,18 +66,25 @@ if __name__ == "__main__":
     while (not ended and iteration < MAX_ITERATIONS):
         if (not skip_planner):
             print(colored("\nStarting AI Planner...", "green"))
-            answer_planner, known_info, already_read = planner(model=model, dirs=dirs,
-                                                               known_info=known_info, already_read=already_read,
-                                                               system_prompt_planner=system_prompt_planner)
-            print(colored("Planner finished!", "green"))
+
+            # Execute the planner
+            tool_used, files_to_read, known_info, already_read = planner(
+                model=model,
+                dirs=dirs,
+                known_info=known_info,
+                already_read=already_read,
+                system_prompt_planner=system_prompt_planner
+            )
+            print(colored(f"Planner finished! Tool used: {tool_used}", "green"))
+            print(colored(f"Planner: Files to read -> {files_to_read}", "magenta"))
         skip_planner = False
 
         if (not skip_summarizer):
             print(colored("\nStarting AI Summarizer...", "green"))
             try:
-                known_info = summarizer(
-                    model=model, files=answer_planner, known_info=known_info, system_prompt_summarizer=system_prompt_summarizer)
-                print(colored(f"Summarizer finished!", "green"))
+                tool_used, known_info = summarizer(
+                    model=model, files=files_to_read, known_info=known_info, system_prompt_summarizer=system_prompt_summarizer)
+                print(colored(f"Summarizer finished! Tool used: {tool_used}", "green"))
             except FileNotFoundError as e:
                 print(colored(f"Error: {e}", "red"))
                 break
@@ -91,41 +100,18 @@ if __name__ == "__main__":
 
         print(colored("\nStarting AI Writer...", "green"))
         template = fetch_template(suggested_output)  # Fetch the template
-        writer_response = writer(model=model, known_info=known_info,
-                                 system_prompt_writer=system_prompt_writer, output_type=suggested_output, template=template)
-        if suggested_output == "Dev Container":
-            output_file = os.path.join(OUTPUT_DIR, "my.dockerfile")
-            devcontainer_file = os.path.join(OUTPUT_DIR, "devcontainer.json")
-            with open(devcontainer_file, "w") as file:
-                file.write("""
-{
-    "name": "My Dev Container",
-    "dockerFile": "my.dockerfile",
-    "context": "..",
-    "appPort": [3000, 3001],
-    "postCreateCommand": "pip install -r requirements.txt",
-    "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash"
-    },
-    "extensions": [
-        "ms-python.python",
-        "ms-azuretools.vscode-docker"
-    ]
-}
-                """)
-        elif suggested_output == "Shell Script":
-            output_file = os.path.join(OUTPUT_DIR, "install.sh")
-        elif suggested_output == "Standalone Executable":
-            output_file = os.path.join(OUTPUT_DIR, "standalone_executable.py")
-        else:
-            raise ValueError(f"Unsupported output type: {suggested_output}")
-
-        print(colored("Writer finished!", "green"))
+        tool_used, writer_response = writer(
+            model=model, known_info=known_info,
+            system_prompt_writer=system_prompt_writer, output_type=suggested_output, template=template
+        )
+        print(colored(f"Writer finished! Tool used: {tool_used}", "green"))
 
         print(colored("\nStarting AI Validator...", "green"))
-        validator_response = validator(model=model, writer_response=writer_response,
-                                       system_prompt_validator=system_prompt_validator, output_type=suggested_output, template=template)
-        print(colored("Validator finished!", "green"))
+        tool_used, validator_response = validator(
+            model=model, writer_response=writer_response,
+            system_prompt_validator=system_prompt_validator, output_type=suggested_output, template=template
+        )
+        print(colored(f"Validator finished! Tool used: {tool_used}", "green"))
 
         if validator_response == "Correct":
             ended = True
