@@ -2,3 +2,5 @@ python-dotenv
 groq
 termcolor
 requests
+rich
+pydantic
