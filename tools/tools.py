@@ -103,10 +103,12 @@ def generate_dockerfile(prompt: str, model: str = "gemma2-9b-it") -> DockerfileR
         # Initialize the Groq client
         client = Groq(api_key=api_key)
 
-        # Define the system message to guide the model
+        # Update system message to be more specific
         system_message = {
             "role": "system",
-            "content": "You are an expert in creating Dockerfiles. Generate a high-quality Dockerfile based on the user's prompt."
+            "content": """You are an expert in creating Dockerfiles. Generate only the Dockerfile code without any explanations.
+            Always wrap the Dockerfile code in ```dockerfile code blocks.
+            Do not include any other text, comments, or explanations."""
         }
 
         # Define the user message with the provided prompt
@@ -128,6 +130,15 @@ def generate_dockerfile(prompt: str, model: str = "gemma2-9b-it") -> DockerfileR
         # Parse and extract Dockerfile content
         content = DockerfileContent(raw_content=response.choices[0].message.content)
         dockerfile_code = content.dockerfile_code
+
+        # Validate dockerfile content
+        if not dockerfile_code.strip().startswith('FROM'):
+            return DockerfileResponse(
+                content="",
+                filepath="",
+                status="error",
+                error="Invalid Dockerfile content: must start with FROM instruction"
+            )
 
         # Create output directory and save file
         output_dir = os.path.join(os.getcwd(), "experimental_workplace")

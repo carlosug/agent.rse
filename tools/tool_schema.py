@@ -39,42 +39,21 @@ tools = [
         "type": "function",
         "function": {
             "name": "generate_dockerfile",
-            "description": "Generates a Dockerfile based on the given prompt using the Groq API and saves it to the experimental_workplace folder. Returns a structured response with the Dockerfile content, file path, and status.",
+            "description": "Generates a clean Dockerfile based on the given prompt. Returns only the Dockerfile instructions without any additional text or explanations.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "prompt": {
                         "type": "string",
-                        "description": "The prompt describing the desired Dockerfile content"
+                        "description": "The prompt describing the desired Dockerfile content. The response will contain only Dockerfile instructions."
                     },
                     "model": {
                         "type": "string",
-                        "description": "The name of the Groq LLM model to use",
+                        "description": "The name of the Groq LLM model to use.",
                         "default": "gemma2-9b-it"
                     }
                 },
                 "required": ["prompt"]
-            },
-            "returns": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "string",
-                        "description": "The cleaned Dockerfile content"
-                    },
-                    "filepath": {
-                        "type": "string",
-                        "description": "Path where the Dockerfile was saved"
-                    },
-                    "status": {
-                        "type": "string",
-                        "description": "Generation status (success/error)"
-                    },
-                    "error": {
-                        "type": "string",
-                        "description": "Error message if any occurred"
-                    }
-                }
             }
         }
     }

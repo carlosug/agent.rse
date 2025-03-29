@@ -103,12 +103,16 @@ def process_message(user_message: str) -> None:
                             result = generate_dockerfile(prompt, model)
                             
                             if result.status == "success":
-                                console.print(Panel(
-                                    Syntax(result.content, "dockerfile", theme="monokai", line_numbers=True),
-                                    title="Generated Dockerfile",
-                                    expand=False
-                                ))
-                                console.print(f"[green]Dockerfile saved to: {result.filepath}[/green]")
+                                # Validate the content format
+                                if result.content.strip():
+                                    console.print(Panel(
+                                        Syntax(result.content, "dockerfile", theme="monokai", line_numbers=True),
+                                        title="Generated Dockerfile",
+                                        expand=False
+                                    ))
+                                    console.print(f"[green]Dockerfile saved to: {result.filepath}[/green]")
+                                else:
+                                    console.print("[red]Error: Generated Dockerfile is empty[/red]")
                             else:
                                 console.print(f"[red]Error: {result.error}[/red]")
                         else:
