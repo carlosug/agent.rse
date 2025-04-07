@@ -1,0 +1,59 @@
+{
+  "chosen_method": "pip",
+  "reason": "The project uses a requirements.txt file, which is typically used with pip.",
+  "steps": [
+    {
+      "order": 1,
+      "method": "git",
+      "description": "Clone the repository",
+      "dependencies": [],
+      "verification": null,
+      "validation_results": null,
+      "command": [
+        "git clone https://github.com/bytedance/repo2run.git",
+        "cd repo2run"
+      ]
+    },
+    {
+      "order": 2,
+      "method": "pip",
+      "description": "Install the required dependencies",
+      "dependencies": [
+        "docker",
+        "pexpect",
+        "openpyxl",
+        "pandas",
+        "openai"
+      ],
+      "verification": null,
+      "validation_results": null,
+      "command": [
+        "pip install -r requirements.txt"
+      ]
+    }
+  ],
+  "fallback_method": null,
+  "safe_to_execute": true,
+  "usage_examples": [
+    {
+      "description": "Running the build agent",
+      "code": "python build_agent/main.py <repository_full_name> <sha> <root_path>"
+    }
+  ],
+  "invocation_commands": [
+    {
+      "command": "python build_agent/main.py <repository_full_name> <sha> <root_path>",
+      "purpose": "Run the build agent",
+      "arguments": {
+        "repository_full_name": "The full name of the repository",
+        "sha": "The commit SHA",
+        "root_path": "The root path for the build process"
+      }
+    }
+  ],
+  "operating_systems": [
+    "Linux",
+    "Windows",
+    "macOS"
+  ]
+}

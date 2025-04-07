@@ -1,0 +1,69 @@
+{
+    "1": {
+        "action": "Step 1: Determine the main language of the project {repo_name} (e.g., Python, Java, etc.) and its version (e.g., Python3.8, Java 17, C99, etc.) from {experimental_workspace/repo_name} and check the requirements.",
+        "functions": [
+            "extract_language_and_version",
+            "write_language_version_to_file",
+            "extract_requirements",
+            "write_requirements_to_file"
+        ],
+        "tool": "- Use 'linux_terminal' to list files and identify relevant files.\n- Read relevant files using 'read_file' in {tools/linux_terminal.py}.",
+        "result_of_step": []
+    },
+    "2": {
+        "action": "Step 2: Extract recommended plan of installation (the dependencies, the requirements, the order steps and commands to be executed) from the output JSON files and write into a file.",
+        "functions": [
+            "read_file_JSON",
+            "extract_plan_of_installation",
+            "extract_requirements",
+            "write_plan_of_installation_to_file"
+        ],
+        "tool": "- Use 'write_plan_of_installation_to_file' to create and ensure a unique plan of installation.\n- The plan should always contains list of dependencies, list of requierements, list of steps and its commands. Use 'write_to_file'.",
+        "result_of_step": []
+    },
+    "3": {
+        "action": "Step 3: Check if requirements and dependencies are installed in machine or if they need to be installed. If they are not installed, check if they are available in the system or if they need to be installed.",
+        "functions": [
+            "check_requirements_and_dependencies",
+            "write_requirements_and_dependencies_to_file"
+        ],
+        "tool": "- Use 'linux_terminal' to check if the requirements are installed.\n- If not installed, check if they are available in the system or need to be installed.\n- Use 'write_to_file' to create a file with the list of requirements and their installation status.",
+        "result_of_step": []
+    },
+    "4": {
+        "action": "Step 4: Set up the virtual environment, if necessary.",
+        "functions": [
+            "setup_virtual_environment"
+        ],
+        "tool": "- Use 'linux_terminal' to configure the environment.",
+        "result_of_step": []
+    },
+    "5": {
+        "action": "Step 5: Install requirements and dependencies in the virtual environment.",
+        "functions": [
+            "install_requirements_and_dependencies",
+            "write_installation_commands_to_file"
+        ],  
+        "tool": "- Install the dependencies collected in Step 3 by executing commands through 'linux_terminal'.\n- Address any problems that arise using 'linux_terminal'.",
+        "result_of_step": []
+    },
+    "6": {
+        "action": "Step 6: Execute the recommended plan of installation extracted from Step 2.",
+        "tool": "- Ensure the requirements and dependencies are installed and locate.\n- Execute the commands using 'linux_terminal'.",
+        "result_of_step": []
+    },
+    "7": {
+        "action": "Step 7: Create a bash script for installation steps.",
+        "tool": "- Use 'write_to_file' to save commands into 'SETUP_AND_INSTALL.sh'.\n- Always create the installation script at the end, after successfully executing the commands.\n- Do not try to execute the installation script during the process or attempt to set up everything using the script; instead, use 'linux_terminal'.",
+        "result_of_step": []
+    },
+    "8": {
+        "action": "Step 8: Create a report with logs in JSON for the project.",
+        "functions": [
+            "create_report",
+            "write_report_to_file"
+        ],
+        "tool": "- Use 'write_to_file' to create the report.\n- Ensure the report.md is created at the end of the process.",
+        "result_of_step": []
+    }
+}

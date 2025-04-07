@@ -6,6 +6,15 @@ __pycache__/
 # C extensions
 *.so
 
+# Old version
+old-version/
+
+# SUPER version
+SUPER/
+
+# resources
+resources/
+
 # Distribution / packaging
 .Python
 build/

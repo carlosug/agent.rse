@@ -1,4 +1,4 @@
-from tools.tools import get_bakery_prices, expert_coder, generate_dockerfile
+from SUPER.tools import get_bakery_prices, expert_coder, generate_dockerfile
 from tools.tool_schema import tools
 from models.groq_model import groq_model
 from termcolor import colored
