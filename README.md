@@ -31,6 +31,70 @@ This project implements the **ETE (Extract-Transform-Execute) Agent** version, w
 3. **Validate**: The `validation_agt.py` agent validates the installation requirements and generates container recommendations.
 4. **Execute**: The `generate_agt.py` agent generates executable files (`install.sh` and `Dockerfile`), and the `super_executor.py` agent executes the installation process.
 
+
+## Installation
+
+### Prerequisites
+- Python 3.8+
+- Git
+- Access to Groq API (requires API key)
+
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/[username]/agent.rse.git
+cd agent.rse
+```
+
+### Step 2: Create and Activate Virtual Environment
+```bash
+python -m venv venv
+source venv/bin/activate  # On macOS/Linux
+# Or on Windows: venv\Scripts\activate
+```
+
+### Step 3: Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### Step 4: Configure Environment Variables
+```bash
+# Create config/.env file with your API keys
+mkdir -p config
+touch config/.env
+
+# Add the following to config/.env:
+GROQ_API_KEY=your_groq_api_key_here
+# Add any other required API keys
+```
+
+### Step 5: Run the ETE Pipeline
+Execute the agents in sequence:
+
+```bash
+# 1. Extract repository metadata
+python agents/extract_agt.py --repo [target_repository_url]
+
+# 2. Transform and analyze repository
+python agents/interpret_agt.py
+python agents/analyse_agt.py
+
+# 3. Validate installation requirements
+python agents/validation_agt.py
+
+# 4. Generate installation files and execute
+python agents/generate_agt.py
+python agents/super_executor.py
+```
+
+### Step 6: View Results
+The installation artifacts will be available in the `outputs` directory:
+- `installation_analysis.json`: Analysis of repository installation requirements
+- `installation_plan.json`: Structured installation plan
+- `install.sh`: Generated installation script
+- `Dockerfile`: Generated container definition
+- `execution_log.json`: Log of the execution process
+
 ### Features
 - No-cost API usage.
 - Leverages Meta's Llama 3.3 70B model for intelligent decision-making.

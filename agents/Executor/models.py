@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+import json
 
 @dataclass
 class ExecutionResult:
@@ -55,12 +56,49 @@ class InstallationStatus:
     test_files: List[str] = field(default_factory=list)
 
 class ToolCall(BaseModel):
-    """Model for tool calls from LLM."""
-    name: str = Field(description="The name of the tool to call")
-    arguments: Dict[str, Any] = Field(description="Tool parameters")
+    """Model for a tool call."""
+    name: str
+    arguments: Union[str, Dict]
+    
+    @field_validator('arguments', mode='before')
+    def validate_arguments(cls, value):
+        """Convert dict to JSON string if necessary."""
+        if isinstance(value, dict):
+            return json.dumps(value)
+        return value
 
 class LLMResponse(BaseModel):
-    """Model for LLM responses."""
-    status: str = Field(description="Success or error status")
-    content: str = Field(description="The LLM's response content")
-    tool_calls: Optional[List[ToolCall]] = Field(default_factory=list, description="List of tool calls")
+    """Model for LLM response."""
+    status: str = "success"
+    content: str = ""
+    tool_calls: List[ToolCall] = []
+    
+    @field_validator('tool_calls', mode='before') 
+    def validate_tool_calls(cls, tool_calls):
+        """Handle tool calls format conversion."""
+        if not tool_calls:
+            return []
+        
+        result = []
+        for tool in tool_calls:
+            if isinstance(tool, dict):
+                # Ensure arguments is a string if it's a dict
+                if 'arguments' in tool and isinstance(tool['arguments'], dict):
+                    tool['arguments'] = json.dumps(tool['arguments'])
+                result.append(tool)
+            else:
+                result.append(tool)
+        return result
+
+    def model_dump(self) -> Dict[str, Any]:
+        """Override model_dump to handle custom serialization."""
+        return {
+            "status": self.status,
+            "content": self.content,
+            "tool_calls": [
+                {
+                    "name": tool.name,
+                    "arguments": tool.arguments
+                } for tool in self.tool_calls
+            ]
+        }

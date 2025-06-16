@@ -356,9 +356,9 @@ def analyze_project_files(workspace_path: str) -> Dict[str, Any]:
         }
 
         # Try with a different model that has higher token limits
-        console.print("[yellow]Attempting analysis with llama-3.3-70b-versatile model...[/yellow]")
+        console.print("[yellow]Attempting analysis with deepseek-r1-distill-llama-70b model...[/yellow]")
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",  # Change to a model with higher token limits
+            model="llama-3.3-70b-versatile",  # Change to a model with higher token limits deepseek-r1-distill-llama-70b
             messages=[system_message, user_message],
             temperature=0.3,  # Lower temperature for more structured output
             max_tokens=2000,

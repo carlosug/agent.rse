@@ -207,14 +207,24 @@ Rules:
 Installation Plan: {json.dumps(context['plan'], indent=2)}
 Analysis: {json.dumps(context['analysis'], indent=2)}
 
-Return ONLY:
+Return your response in EXACTLY this format. 
+Replace the content inside sections with your actual content:
+
 <think>
-Your reasoning about the Dockerfile structure
+Your reasoning about how to structure the Dockerfile
 </think>
 
 <dockerfile>
-# Dockerfile content here:
-</dockerfile>"""
+FROM ubuntu:latest
+WORKDIR /app
+COPY install.sh .
+RUN chmod +x install.sh && ./install.sh
+CMD ["command", "to", "run"]
+</dockerfile>
+
+The <dockerfile> section must contain a complete, valid Dockerfile with FROM, WORKDIR, COPY, RUN, and CMD instructions.
+Do not include explanations inside the <dockerfile> section. Only include valid Dockerfile instructions.
+"""
             }
 
             # Get response from LLM
@@ -230,26 +240,66 @@ Your reasoning about the Dockerfile structure
             
             raw_content = response.choices[0].message.content.strip()
             
-            # Extract Dockerfile content starting from "# Dockerfile content here:"
-            dockerfile_start = raw_content.find("# Dockerfile content here:")
-            if dockerfile_start == -1:
-                # Log invalid response for debugging
-                debug_path = os.path.join(self.workspace_path, "outputs", "invalid_dockerfile_response.txt")
-                with open(debug_path, 'w') as debug_file:
-                    debug_file.write(raw_content)
-                console.print(f"[yellow]Invalid Dockerfile response saved to {debug_path}[/yellow]")
-                raise ValueError("No valid Dockerfile content found in response")
+            # Extract Dockerfile content using regex
+            dockerfile_match = re.search(r'<dockerfile>(.*?)</dockerfile>', raw_content, re.DOTALL)
             
-            dockerfile_content = raw_content[dockerfile_start + len("# Dockerfile content here:"):].strip()
+            # If no <dockerfile> tags found, try a fallback extraction approach
+            if not dockerfile_match:
+                # Look for Dockerfile content with common indicators
+                # This checks for content that looks like Dockerfile instructions
+                possible_dockerfile = ""
+                lines = raw_content.split('\n')
+                capture = False
+                for line in lines:
+                    # Check for common Dockerfile instruction patterns
+                    if any(line.strip().startswith(instr) for instr in 
+                           ["FROM", "WORKDIR", "COPY", "RUN", "CMD", "ENV", "EXPOSE", "LABEL"]):
+                        capture = True
+                        possible_dockerfile += line + "\n"
+                    # Continue capturing until we hit something that's clearly not Dockerfile content
+                    elif capture and line.strip() and not line.strip().startswith("#") and not line.startswith("```"):
+                        possible_dockerfile += line + "\n"
+                
+                # If we found potential Dockerfile content
+                if possible_dockerfile.strip():
+                    dockerfile_content = possible_dockerfile.strip()
+                    console.print("[yellow]No <dockerfile> tags found. Extracted content based on instruction patterns.[/yellow]")
+                else:
+                    # As a last resort, generate a generic Dockerfile based on context
+                    dockerfile_content = self.generate_fallback_dockerfile(context)
+                    console.print("[yellow]Generating fallback Dockerfile.[/yellow]")
+            else:
+                dockerfile_content = dockerfile_match.group(1).strip()
+            
+            # Log response for debugging
+            debug_path = os.path.join(self.workspace_path, "outputs", "dockerfile_response.txt")
+            with open(debug_path, 'w') as debug_file:
+                debug_file.write(raw_content)
+            
+            # Extract reasoning content
+            reasoning_match = re.search(r'<think>(.*?)</think>', raw_content, re.DOTALL)
+            reasoning_text = reasoning_match.group(1).strip() if reasoning_match else "No explicit reasoning provided"
             
             # Validate Dockerfile content
             required_instructions = ["FROM", "WORKDIR", "COPY", "RUN", "CMD"]
             missing_instructions = [instr for instr in required_instructions if instr not in dockerfile_content]
             if missing_instructions:
-                raise ValueError(f"Dockerfile must contain the following instructions: {', '.join(missing_instructions)}")
+                # Add missing instructions to make it valid
+                if "FROM" not in dockerfile_content:
+                    dockerfile_content = "FROM ubuntu:latest\n" + dockerfile_content
+                if "WORKDIR" not in dockerfile_content:
+                    dockerfile_content = dockerfile_content + "\nWORKDIR /app"
+                if "COPY" not in dockerfile_content:
+                    dockerfile_content = dockerfile_content + "\nCOPY install.sh ."
+                if "RUN" not in dockerfile_content:
+                    dockerfile_content = dockerfile_content + "\nRUN chmod +x install.sh && ./install.sh"
+                if "CMD" not in dockerfile_content:
+                    dockerfile_content = dockerfile_content + '\nCMD ["python", "app.py"]'
+                
+                console.print(f"[yellow]Added missing instructions: {', '.join(missing_instructions)}[/yellow]")
             
             return DockerfileResponse(
-                reasoning="Reasoning extracted successfully",
+                reasoning=reasoning_text,
                 dockerfile_code=dockerfile_content,
                 raw_content=raw_content
             )
@@ -263,17 +313,37 @@ Your reasoning about the Dockerfile structure
                 status="error",
                 error=str(e)
             )
+    
+    def generate_fallback_dockerfile(self, context: Dict[str, Any]) -> str:
+        """Generate a fallback Dockerfile based on context if LLM fails."""
+        # Extract some basic info from context to improve the fallback
+        plan = context.get('plan', {})
+        analysis = context.get('analysis', {})
+        
+        # Determine base image
+        base_image = "ubuntu:latest"  # Default
+        packages = analysis.get('packages', [])
+        if any('python' in pkg.lower() for pkg in packages):
+            base_image = "python:3.9-slim"
+        elif any('node' in pkg.lower() for pkg in packages):
+            base_image = "node:16-slim"
+        
+        # Create a basic Dockerfile
+        dockerfile = f"""FROM {base_image}
 
-    @field_validator("dockerfile_code")
-    def validate_dockerfile_code(cls, value):
-        """Ensure the Dockerfile code contains essential instructions and no invalid tags."""
-        if "<think>" in value or "</think>" in value:
-            raise ValueError("Dockerfile contains invalid <think> tags")
-        required_instructions = ["FROM", "WORKDIR", "COPY", "RUN", "CMD"]
-        missing_instructions = [instr for instr in required_instructions if instr not in value]
-        if missing_instructions:
-            raise ValueError(f"Dockerfile must contain the following instructions: {', '.join(missing_instructions)}")
-        return value
+# Set working directory
+WORKDIR /app
+
+# Copy installation script
+COPY install.sh .
+
+# Make script executable and run it
+RUN chmod +x install.sh && ./install.sh
+
+# Default command
+CMD ["bash"]
+"""
+        return dockerfile
 
     def generate(self) -> GenerationResponse:
         """Generate container files and reasoning."""

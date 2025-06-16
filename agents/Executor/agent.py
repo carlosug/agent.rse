@@ -22,11 +22,11 @@ from agents.Executor.tools.tools import (
 from agents.Executor.tools.tool_schema import tools
 
 
-MODEL = "qwen-2.5-32b"
+MODEL ="qwen-qwq-32b" # deprecated "qwen-2.5-32b" 
 
 WORKSPACE_PATH = Path(__file__).parent.parent.parent / "execution_agent_workspace"
 # REPO_PATH = WORKSPACE_PATH / "Repo2Run"
-OUTPUT_PATH = WORKSPACE_PATH / "outputs"  # This is where install.sh should be found
+OUTPUT_PATH = WORKSPACE_PATH / "outputs"  # This is where install.sh should be found after copy from REPO_PATH (dgm)
 
 # Create necessary directories with proper structure
 WORKSPACE_PATH.mkdir(exist_ok=True)
@@ -36,18 +36,29 @@ OUTPUT_PATH.mkdir(exist_ok=True)
 # Define system prompt explicitly
 SYSTEM_PROMPT = """You are an installation assistant. Follow these exact steps:
 
-STEP 1. Find Install Script: Install.sh
+STEP 1. Create Workspace & Copy Files
+{
+    "name": "execute_tool_in_terminal",
+    "arguments": {
+        "name": "ensure_workspace_exists",
+        "arguments": {
+            "base_path": "execution_agent_workspace"
+        }
+    }
+}
+
+STEP 2. Find Install Script: Install.sh
 {
     "name": "execute_tool_in_terminal",
     "arguments": {
         "name": "find_install_script",
         "arguments": {
-            "path": "execution_agent_workspace/outputs"
+            "path": "execution_agent_workspace"
         }
     }
 }
 
-STEP 2. Run Installation: Install.sh
+STEP 3. Run Installation: Install.sh
 {
     "name": "execute_tool_in_terminal",
     "arguments": {
@@ -58,7 +69,7 @@ STEP 2. Run Installation: Install.sh
     }
 }
 
-STEP 3. If Error Occurs:
+STEP 4. If Error Occurs:
 {
     "name": "execute_tool_in_terminal",
     "arguments": {
@@ -70,9 +81,10 @@ STEP 3. If Error Occurs:
 }
 
 IMPORTANT:
-1. The install.sh script already exists, just find, locate and run it
-2. Save all outputs to log files
-3. Create search query if errors occur
+1. The first step will copy the install.sh script from experimental_workspace to execution_agent_workspace
+2. Then locate the copied script and run it
+3. Save all outputs to log files
+4. Create search query if errors occur
 """
 
 available_tools = {
@@ -175,7 +187,7 @@ def interact_with_llm(user_prompt: str) -> LLMResponse:
                     # Track usage and update conversation
                     tool_usage.append({
                         "name": function_name,
-                        "arguments": function_args,
+                        "arguments": tool_call.function.arguments,  # Store arguments as string
                         "result": function_response,
                         "timestamp": datetime.now().isoformat()
                     })

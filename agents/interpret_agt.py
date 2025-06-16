@@ -108,7 +108,7 @@ def analyze_readme(repo_path: str) -> ReadmeAnalysisResponse:
 
         # Get analysis from Groq
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",  # Changed to more reliable model
+            model="llama-3.3-70b-versatile",  # Changed to more reliable model deepseek-r1-distill-llama-70b
             messages=[system_message, user_message],
             max_tokens=2000,
             temperature=0.1

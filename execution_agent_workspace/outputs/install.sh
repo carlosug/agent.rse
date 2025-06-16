@@ -1,16 +1,18 @@
 #!/bin/bash
 set -e
 
-echo "Cloning the repository..."
-git clone https://github.com/bytedance/repo2run.git
-echo "Cloning completed successfully."
+echo "Cloning the SOMEF repository..."
+git clone https://github.com/KnowledgeCaptureAndDiscovery/somef.git
 
-echo "Changing directory to repo2run..."
-cd repo2run
-echo "Directory changed to repo2run."
+echo "Installing Poetry..."
+curl -sSL https://install.python-poetry.org | python3 -
 
-echo "Installing dependencies..."
-pip install -r requirements.txt
-echo "Dependencies installed successfully."
+echo "Installing SOMEF and its dependencies..."
+cd somef
+poetry install
 
-echo "Installation and setup completed."
+echo "Installing the poetry plugin shell..."
+pip install poetry-plugin-shell
+
+echo "Accessing the virtual environment..."
+poetry shell
