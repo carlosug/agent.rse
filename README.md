@@ -2,7 +2,7 @@
 
 
 <p align="center">
-<img src="/media/ete.png" width="100" alt="ETE Diagram">
+<img src="/media/ete.png" width="10000" alt="ETE Diagram">
 </p>
 
 
