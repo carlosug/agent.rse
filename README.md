@@ -1,6 +1,7 @@
 # ETE Agent: Extract, Transform and Execute Install Instructions From README files automatically
 
-![](/media/ete.png){width=500px}
+<img src="/media/ete.png" width="500" alt="ETE Diagram">
+
 ## Idea
 - Equip our ETE Assistant with tools to extract this information from the project directly.
 - Instead of asking the user, an assistant can ask for a tool instead.
