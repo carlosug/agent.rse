@@ -22,7 +22,7 @@ from agents.Executor.tools.tools import (
 from agents.Executor.tools.tool_schema import tools
 
 
-MODEL ="qwen-qwq-32b" # deprecated "qwen-2.5-32b" 
+MODEL ="qwen/qwen3-32b" # at 12.09.2025 deprecated "qwen-qwq-32b" # deprecated "qwen-2.5-32b" 
 
 WORKSPACE_PATH = Path(__file__).parent.parent.parent / "execution_agent_workspace"
 # REPO_PATH = WORKSPACE_PATH / "Repo2Run"

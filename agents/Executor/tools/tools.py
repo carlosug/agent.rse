@@ -302,7 +302,7 @@ def formulate_error_search_prompt(error_file: str) -> Dict[str, str]:
         # Use GROQ to analyze error
         client = init_groq_client()
         response = client.chat.completions.create(
-            model="qwen-qwq-32b", # deprecarted "qwen-2.5-32b",
+            model= "qwen/qwen3-32b", # at 12.09.2025 deprecated "qwen-qwq-32b", # deprecarted "qwen-2.5-32b",
             messages=[
                 {"role": "system", "content": "We are tring to install the <REP_URL> repository. An error has arised. Inspect error_content and suggest a prompt for searching in solution in the web:"},
                 {"role": "user", "content": error_content}

@@ -22,8 +22,20 @@ class StandardInstallationMethod(str, Enum):
 class InstallationMethod(str, Enum):
     """Enumeration of supported installation methods."""
     PIP = "pip"
+    CONDA = "conda"
     DOCKER = "docker"
     SOURCE = "source"
+    UNKNOWN = "unknown"
+    
+    # Add this validator method to handle case mismatches
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            # Try case-insensitive matching
+            for member in cls:
+                if member.value.lower() == value.lower():
+                    return member
+        return cls.UNKNOWN
 
 class DynamicInstallationMethod(BaseModel):
     """Flexible model for handling custom installation methods."""
