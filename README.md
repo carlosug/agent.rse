@@ -57,6 +57,17 @@ python -m venv venv
 source venv/bin/activate  # On macOS/Linux
 # Or on Windows: venv\Scripts\activate
 ```
+<!-- commands to make it work
+ 1043  source venv/bin/activate # activate agent.rse env
+ 1044  history grep
+ 1045  history | grep python
+ 1046  python3 agents/extract_agt.py # pydantic conflict since we are using old version TODO: to update
+ 1047  python3 agents/interpret_agt.py  #issue with instructor -- needed to pip install
+ 1048  python3 agents/interpret_agt.py https://github.com/KatherLab/ToolMaker
+ 1049  python3 agents/analyse_agt.py
+ 1050  python3 agents/validation_agt.py
+ 1051  python3 agents/generate_agt.py
+ 1052  python3 agents/super_executor.py -->
 
 ### Step 3: Install Dependencies
 ```bash
